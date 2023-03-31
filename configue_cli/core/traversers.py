@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, ClassVar, Dict, Optional, Protocol, Tuple, Type, Union
+from typing import Any, ClassVar, Dict, Optional, Tuple, Type, Union, cast
 
 import attr
 
@@ -7,8 +7,8 @@ from .exceptions import UnsupportedDataclassType
 from .missing import MISSING
 
 
-class NativeDataclassInstance(Protocol):
-    __dataclass_fields__: ClassVar[dict[str, dataclasses.Field[Any]]]
+class NativeDataclassInstance:
+    __dataclass_fields__: ClassVar[Dict[str, dataclasses.Field]]
 
 
 DataclassInstance = Union[NativeDataclassInstance, attr.AttrsInstance]
@@ -218,7 +218,9 @@ class Traverser:
         initial_config: Any = None,
     ) -> Tuple[Dict[str, Any], DataclassInstance]:
         if dataclasses.is_dataclass(type_):
-            return NativeDataclassTraverser.traverse_type(type_, initial_config=initial_config)
+            return NativeDataclassTraverser.traverse_type(
+                cast(Type[NativeDataclassInstance], type_), initial_config=initial_config
+            )
         if attr.has(type_):
             return AttrsDataclassTraverser.traverse_type(type_, initial_config=initial_config)
         raise UnsupportedDataclassType(

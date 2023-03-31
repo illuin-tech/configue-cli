@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, List, Literal, Optional, Type, TypeVar, Union, overload
+from typing import Callable, List, Optional, Type, TypeVar, Union, overload
 
 from .core import configue_cli
 from .core.dict_config import DictConfig, ListMergeMode
@@ -23,7 +23,7 @@ def inject_from_cli(
 
 @overload
 def inject_from_cli(
-    target_type: Literal[None] = None,
+    target_type: None = None,
     *,
     logging_config_path: Optional[str] = None,
     yaml_merge_mode: ListMergeMode = ListMergeMode.EXTEND,

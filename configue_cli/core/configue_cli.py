@@ -64,7 +64,7 @@ def inject_from_cli(  # pylint: disable=too-many-locals
 
     # Step 2: Append a configuration generated from command line arguments (if any)
     cli_configs = []
-    _parameters = parameters or tuple[str]()
+    _parameters = parameters or ()
     if len(_parameters) > 0:
         cli_configs.append(DictConfig.from_dotlist(_parameters))
     base_config.merge(*cli_configs, mode=cli_merge_mode)

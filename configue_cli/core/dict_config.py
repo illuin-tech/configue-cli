@@ -34,7 +34,7 @@ def _deepmerge(destination: DictConfig, source: Mapping, mode: ListMergeMode) ->
     return destination
 
 
-class DictConfig(dict[str, Any]):
+class DictConfig(Dict[str, Any]):
     def __init__(self, *args: Dict[str, Any], **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         for key, value in self.items():
