@@ -1,0 +1,5 @@
+attrs_sub_config:
+  (): tests.test_configue_cli.AttrsSubConfig
+  param_1: 4
+
+param_1: 3
