@@ -5,7 +5,7 @@ import tempfile
 import textwrap
 from logging import Handler, LogRecord
 from typing import List, Type
-from unittest import TestCase
+from unittest import TestCase, mock
 
 import attrs
 import click
@@ -720,4 +720,19 @@ class TestConfigueCLI(TestCase):
         result = runner.invoke(
             main, ["-c", "tests/logging.yml", "-c", "tests/config_1.yml", "-c", "tests/config_2.yml"]
         )
+        self.assertEqual(result.exit_code, 0)
+
+    def test_load_skypilot_config(self):
+        @click.command()
+        @inject_from_cli(DataclassConfig, skypilot_config_path="skypilot")
+        def main(config) -> None:
+            self.assertIsInstance(config, DataclassConfig)
+
+        skypilot_exec = mock.Mock()
+        with mock.patch("sky.exec", skypilot_exec):
+            runner = CliRunner()
+            result = runner.invoke(
+                main, ["-c", "tests/skypilot.yml", "-c", "tests/config_1.yml", "-c", "tests/config_2.yml"]
+            )
+        skypilot_exec.assert_called_once()
         self.assertEqual(result.exit_code, 0)

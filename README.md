@@ -4,22 +4,21 @@ A [configue](https://github.com/illuin-tech/configue) extension that adds the ab
 
 Configue CLI overlaps in functionality with [Hydra](https://hydra.cc/) but without all the unnecessary boilerplate and with the benefit of being compatible with `configue`.
 
-### Table of contents
+#### Table of contents
 
 - [Installation](#installation)
 - [Quick start](#quick-start)
-  - [Integration in a click CLI](#integration-in-a-click-cli)
-  - [Integration in a Fire CLI](#integration-in-a-fire-cli)
 - [Inspection of the configuration state](#inspection-of-the-configuration-state)
 - [Configuration from the command line](#configuration-from-the-command-line)
 - [Configuration with YAML files](#configuration-with-yaml-files)
 - [Exporting the final configuration](#exporting-the-final-configuration)
-- [Configuring the logging](#configuring-the-logging)
 - [Unstructured configuration](#unstructured-configuration)
+- [Configuring the logging](#configuring-the-logging)
+- [Integration with Skypilot](#integration-with-skypilot)
 
 ## Installation
 
-To install the library from ILLUIN's Nexus, use
+To install the library, use
 
 ```shell
 pip install configue-cli
@@ -67,11 +66,7 @@ class ExperimentConfig:
     dataset: DatasetConfig
 ```
 
-These objects are injected at configuration time in your application entrypoint by the `inject_from_cli` decorator. `configue-cli` is compatible with `click` and `fire` CLI applications.
-
-### Integration in a click CLI
-
-To use `configue-cli` in a [click](https://github.com/pallets/click) command line application, simply wrap the entrypoint with the `configue_cli.click.inject_from_cli` decorator and provide a target type to be injected.
+These objects are injected at configuration time in your application entrypoint by the `inject_from_cli` decorator. To use `configue-cli`, simply wrap a [click](https://github.com/pallets/click) entrypoint with the `configue_cli.click.inject_from_cli` decorator and provide a target type to be injected.
 
 ```python
 import click
@@ -91,29 +86,6 @@ To display a help message, use the following:
 
 ```shell
 python main.py --help
-```
-
-### Integration in a Fire CLI
-
-Alternatively, `configue-cli` can be integrated in a [Fire](https://github.com/google/python-fire) CLI:
-
-```python
-import fire
-from configue_cli.fire import inject_from_cli
-
-@inject_from_cli(ExperimentConfig)
-def main(config: ExperimentConfig) -> None:
-    print("Passed configuration: ", config)
-
-
-if __name__ == "__main__":
-    fire.Fire(main)
-```
-
-To display a help message, use the following:
-
-```shell
-python main.py -h
 ```
 
 ## Inspection of the configuration state
@@ -251,12 +223,6 @@ $ python main.py -c model.yml -c large_batch.yml --dry-run
 ╰───────────────────────────────────────────────────────────╯
 ```
 
-> If you are using Fire, the same flag cannot be passed multiple times in the same command. To pass a list of multiple paths, it is therefore necessary to use:
->
-> ```shell
-> $ python main.py -c "[\"model.yml\", \"large_batch.yml\"]" --dry-run
-> ```
-
 Parameters specified with the command line take precedence over the ones specified in YAML files:
 
 ```shell
@@ -324,17 +290,6 @@ dataset:
   n_samples: 10000
 ```
 
-## Configuring the logging
-
-To load a [logging configuration](https://docs.python.org/3/library/logging.config.html) located under the `"logging"` key in your final configuration, use the following:
-
-```python
-@click.command()
-@inject_from_cli(ExperimentConfig, logging_config_path="logging")
-def main(config: ExperimentConfig) -> None:
-    ...
-```
-
 ## Unstructured configuration
 
 It is possible to use the `inject_from_cli` decorator without specifying a target type:
@@ -347,3 +302,54 @@ def main(config: configue_cli.core.dict_config.DictConfig) -> None:
 ```
 
 In that case, the wrapped entrypoint will be passed a `configue_cli.core.dict_config.DictConfig` object upon injection.
+
+## Configuring the logging
+
+To load a [logging configuration](https://docs.python.org/3/library/logging.config.html) located under the `"logging"` key in your final configuration, use the following:
+
+```python
+@click.command()
+@inject_from_cli(ExperimentConfig, logging_config_path="logging")
+def main(config: ExperimentConfig) -> None:
+    ...
+```
+
+## Integration with Skypilot
+
+[SkyPilot](https://github.com/skypilot-org/skypilot) is a framework for easily running jobs on any cloud through a unified interface. Any function decorated with `inject_from_cli` can easily be executed remotely by providing a Skypilot configuration.
+
+The following configuration defines a job to be executed in a SkyPilot cluster named `test-cluster`. The job is defined under the `task` key, we refer to the [SkyPilot YAML specification](https://skypilot.readthedocs.io/en/latest/reference/yaml-spec.html) for more details on this section.
+
+The Python command and all its arguments are captured and interpolated inside the `run` command, respectively in a `{command}` and `{parameters}` placeholder.
+
+```yaml
+# skypilot.yml
+skypilot:
+  cluster-name: test-cluster
+  task:
+    resources:
+      cloud: gcp
+      accelerators: K80:1
+    workdir: .
+    setup: |
+      echo 'Setup the job...'
+    run: |
+      set -e
+      cd ~/sky_workdir
+      {command} {parameters}
+```
+
+To load the SkyPilot configuration in your final configuration, use the following:
+
+```python
+@click.command()
+@inject_from_cli(ExperimentConfig, skypilot_config_path="skypilot")
+def main(config: ExperimentConfig) -> None:
+    ...
+```
+
+As with the other arguments, all SkyPilot configuration arguments can be redefined on the fly:
+
+```shell
+python main.py -c skypilot.yml skypilot.cluster-name=another-cluster
+```
