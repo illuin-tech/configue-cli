@@ -1,10 +1,7 @@
 from pathlib import Path
 from typing import Callable, List, Optional, Tuple, Type, TypeVar, Union, overload
 
-try:  # pragma: no cover
-    import click
-except ImportError as exc:  # pragma: no cover
-    raise ImportError("click is not installed, use `pip install click`") from exc
+import click
 
 from .core import configue_cli
 from .core.dict_config import DictConfig, ListMergeMode
@@ -21,6 +18,7 @@ def inject_from_cli(
     target_type: Type[InjectedT],
     *,
     logging_config_path: Optional[str] = None,
+    skypilot_config_path: Optional[str] = None,
     yaml_merge_mode: ListMergeMode = ListMergeMode.EXTEND,
     cli_merge_mode: ListMergeMode = ListMergeMode.REPLACE,
 ) -> Callable[[Callable[[InjectedT], ReturnedT]], Callable[..., Optional[ReturnedT]]]:
@@ -32,6 +30,7 @@ def inject_from_cli(
     target_type: None = None,
     *,
     logging_config_path: Optional[str] = None,
+    skypilot_config_path: Optional[str] = None,
     yaml_merge_mode: ListMergeMode = ListMergeMode.EXTEND,
     cli_merge_mode: ListMergeMode = ListMergeMode.REPLACE,
 ) -> Callable[[Callable[[DictConfig], ReturnedT]], Callable[..., Optional[ReturnedT]]]:
@@ -42,6 +41,7 @@ def inject_from_cli(
     target_type: Optional[Type[InjectedT]] = None,
     *,
     logging_config_path: Optional[str] = None,
+    skypilot_config_path: Optional[str] = None,
     yaml_merge_mode: ListMergeMode = ListMergeMode.EXTEND,
     cli_merge_mode: ListMergeMode = ListMergeMode.REPLACE,
 ) -> Callable[[Callable[[Union[InjectedT, DictConfig]], ReturnedT]], Callable[..., Optional[ReturnedT]]]:
@@ -86,7 +86,9 @@ def inject_from_cli(
             type=click.Path(writable=True),
             help=configue_cli.OUTPUT_DOCSTRING,
         )
+        @click.pass_context
         def wrapped(
+            context: click.Context,
             parameters: Tuple[str],
             config_paths: Optional[List[str]] = None,
             output: Optional[Path] = None,
@@ -95,6 +97,7 @@ def inject_from_cli(
             pretty_print: bool = True,
         ) -> Optional[ReturnedT]:
             return configue_cli.inject_from_cli(
+                context=context,
                 parameters=parameters,
                 inner_function=inner_function,
                 config_paths=config_paths,
@@ -104,6 +107,7 @@ def inject_from_cli(
                 target_type=target_type,
                 tree_depth=tree_depth,
                 logging_config_path=logging_config_path,
+                skypilot_config_path=skypilot_config_path,
                 yaml_merge_mode=yaml_merge_mode,
                 cli_merge_mode=cli_merge_mode,
             )

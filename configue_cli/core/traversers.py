@@ -3,7 +3,7 @@ from typing import Any, ClassVar, Dict, Optional, Tuple, Type, Union, cast
 
 import attr
 
-from .exceptions import UnsupportedDataclassType
+from .exceptions import UnsupportedDataclassTypeError
 from .missing import MISSING
 
 
@@ -47,18 +47,18 @@ class NativeDataclassTraverser:
         for field in dataclasses.fields(type_):
             if not field.init:
                 continue
-            if not isinstance(field.default, dataclasses._MISSING_TYPE):  # pylint: disable=protected-access
+            if not isinstance(field.default, dataclasses._MISSING_TYPE):
                 sub_instance_type = field.default
                 try:
                     sub_config, partially_init_subinstance = Traverser.traverse_type(
                         sub_instance_type, initial_config=initial_config.get(field.name, None)
                     )
                     setattr(partially_init_instance, field.name, partially_init_subinstance)
-                except UnsupportedDataclassType:
+                except UnsupportedDataclassTypeError:
                     sub_config = initial_config.get(field.name, sub_instance_type)
                     setattr(partially_init_instance, field.name, sub_config)
 
-            elif not isinstance(field.default_factory, dataclasses._MISSING_TYPE):  # pylint: disable=protected-access
+            elif not isinstance(field.default_factory, dataclasses._MISSING_TYPE):
                 sub_instance = field.default_factory()
                 sub_config, partially_init_subinstance = Traverser.traverse_instance(
                     sub_instance, initial_config=initial_config.get(field.name, None)
@@ -72,7 +72,7 @@ class NativeDataclassTraverser:
                         sub_instance_type, initial_config=initial_config.get(field.name, None)
                     )
                     setattr(partially_init_instance, field.name, partially_init_subinstance)
-                except UnsupportedDataclassType:
+                except UnsupportedDataclassTypeError:
                     sub_config = initial_config.get(field.name, MISSING)
                     try:
                         setattr(partially_init_instance, field.name, sub_config)
@@ -99,7 +99,7 @@ class AttrsDataclassTraverser:
             )
             setattr(partially_init_instance, field.name, partially_init_subinstance)
 
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             sub_config = initial_config.get(field.name, MISSING)
             setattr(partially_init_instance, field.name, sub_config)
         return sub_config
@@ -150,7 +150,6 @@ class AttrsDataclassTraverser:
         for field in attr.fields(type_):
             if not field.init:
                 continue
-            # pylint: disable=protected-access
             if field.default != attr._make._Nothing.NOTHING:  # type: ignore[attr-defined]
                 if isinstance(field.default, attr._make.Factory):  # type: ignore[attr-defined]
                     if field.default.takes_self:
@@ -171,7 +170,7 @@ class AttrsDataclassTraverser:
                     )
                     setattr(partially_init_instance, field.name, partially_init_subinstance)
 
-                except UnsupportedDataclassType:
+                except UnsupportedDataclassTypeError:
                     sub_config = initial_config.get(field.name, MISSING)
                     try:
                         setattr(partially_init_instance, field.name, sub_config)
@@ -223,6 +222,6 @@ class Traverser:
             )
         if attr.has(type_):
             return AttrsDataclassTraverser.traverse_type(type_, initial_config=initial_config)
-        raise UnsupportedDataclassType(
+        raise UnsupportedDataclassTypeError(
             f"`type_` should be the type of a native dataclass or `attr` dataclass, not {type_}"
         )

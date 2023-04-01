@@ -1,11 +1,13 @@
 # mypy: disable-error-code=no-untyped-def
 import dataclasses
 import logging
+import sys
 import tempfile
 import textwrap
+import unittest
+import unittest.mock
 from logging import Handler, LogRecord
 from typing import List, Type
-from unittest import TestCase
 
 import attrs
 import click
@@ -13,7 +15,7 @@ from click.testing import CliRunner
 
 from configue_cli.click import inject_from_cli
 from configue_cli.core.dict_config import DictConfig
-from configue_cli.core.exceptions import MissingMandatoryValue
+from configue_cli.core.exceptions import MissingMandatoryValueError
 
 
 class CustomType:
@@ -98,7 +100,7 @@ class MainConfig:
     )
 
 
-class TestConfigueCLI(TestCase):
+class TestConfigueCLI(unittest.TestCase):
     def test_fail_when_missing_required_parameter(self) -> None:
         @click.command()
         @inject_from_cli(MainConfig)
@@ -108,7 +110,7 @@ class TestConfigueCLI(TestCase):
         runner = CliRunner()
         result = runner.invoke(main, [])
         self.assertEqual(result.exit_code, 1)
-        self.assertIsInstance(result.exception, MissingMandatoryValue)
+        self.assertIsInstance(result.exception, MissingMandatoryValueError)
         self.assertEqual(result.exception.args[0], "Missing mandatory value: param_1")  # type: ignore[union-attr]
 
     def test_dry_run_unstructured(self) -> None:
@@ -720,4 +722,20 @@ class TestConfigueCLI(TestCase):
         result = runner.invoke(
             main, ["-c", "tests/logging.yml", "-c", "tests/config_1.yml", "-c", "tests/config_2.yml"]
         )
+        self.assertEqual(result.exit_code, 0)
+
+    @unittest.skipIf(sys.version_info >= (3, 11), "Skipping because of Python 3.11")
+    def test_load_skypilot_config(self):
+        @click.command()
+        @inject_from_cli(DataclassConfig, skypilot_config_path="skypilot")
+        def main(config) -> None:
+            self.assertIsInstance(config, DataclassConfig)
+
+        skypilot_exec = unittest.mock.Mock()
+        with unittest.mock.patch("sky.exec", skypilot_exec):
+            runner = CliRunner()
+            result = runner.invoke(
+                main, ["-c", "tests/skypilot.yml", "-c", "tests/config_1.yml", "-c", "tests/config_2.yml"]
+            )
+        skypilot_exec.assert_called_once()
         self.assertEqual(result.exit_code, 0)

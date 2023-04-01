@@ -22,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
     'attrs>=22.0.0',
+    'click>=8.0.0',
     'configue>=4.0.0',
     'pyyaml>=5.1.0',
     'rich>=13.0.0',
@@ -29,7 +30,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-click = ["click>=8.0.0"]
+skypilot = ["skypilot==0.2.5; python_version < '3.11'"]
 
 [project.urls]
 homepage = "https://github.com/illuin-tech/configue-cli"
@@ -52,156 +53,6 @@ include = ['configue_cli', 'configue_cli.*']
 [tool.setuptools.package-data]
 configue_cli = ['py.typed']
 
-[tool.black]
-line-length = 120
-
-[tool.pylint.master]
-jobs = 1
-load-plugins = ['pylint.extensions.no_self_use']
-persistent = ['yes']
-suggestion-mode = 'yes'
-unsafe-load-any-extension = ['no']
-
-[tool.pylint.'MESSAGES CONTROL']
-disable = [
-    'duplicate-code',
-    'logging-fstring-interpolation',
-    'missing-class-docstring',
-    'missing-function-docstring',
-    'missing-module-docstring',
-    'too-few-public-methods',
-    'too-many-arguments'
-]
-enable = ['c-extension-no-member', 'useless-suppression']
-
-[tool.pylint.'REPORTS']
-evaluation = [
-    '10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)'
-]
-output-format = ['colorized']
-reports = ['yes']
-score = ['yes']
-
-[tool.pylint.'REFACTORING']
-max-nested-blocks = 5
-
-[tool.pylint.'MISCELLANEOUS']
-notes = ['FIXME', 'TODO']
-
-[tool.pylint.'LOGGING']
-logging-format-style = 'new'
-logging-modules = ['logging']
-
-[tool.pylint.'SPELLING']
-max-spelling-suggestions = 4
-spelling-store-unknown-words = ['no']
-
-[tool.pylint.'TYPECHECK']
-contextmanager-decorators = ['contextlib.contextmanager']
-generated-members = ['numpy.*', 'torch.*']
-ignore-mixin-members = ['yes']
-ignore-on-opaque-inference = ['yes']
-ignored-classes = ['optparse.Values', 'thread._local', '_thread._local']
-ignored-modules = []
-missing-member-hint = ['yes']
-missing-member-hint-distance = 1
-missing-member-max-choices = 1
-signature-mutators = [
-    'click.decorators.option',
-    'click.decorators.argument',
-    'configue_cli._configue_cli.inject_from_cli',
-    'configue_cli.click.inject_from_cli',
-    'configue_cli.fire.inject_from_cli'
-]
-
-[tool.pylint.'FORMAT']
-ignore-long-lines = ['^\s*(# )?<?https?://\S+>?$']
-indent-after-paren = 4
-indent-string = '    '
-max-line-length = 120
-max-module-lines = 1000
-single-line-class-stmt = ['no']
-single-line-if-stmt = ['no']
-
-[tool.pylint.'SIMILARITIES']
-ignore-comments = ['yes']
-ignore-docstrings = ['yes']
-ignore-imports = ['no']
-min-similarity-lines = 4
-
-[tool.pylint.'BASIC']
-argument-naming-style = 'snake_case'
-attr-naming-style = 'snake_case'
-bad-names = ['foo', 'bar', 'baz', 'toto', 'tutu', 'tata']
-class-attribute-naming-style = 'snake_case'
-class-naming-style = 'PascalCase'
-const-naming-style = 'UPPER_CASE'
-docstring-min-length = -1
-function-naming-style = 'snake_case'
-good-names = ['i', 'j', 'k', 'ex', 'Run', '_', 'x', 'y', 'o', 'id', 'to']
-inlinevar-naming-style = 'snake_case'
-method-naming-style = 'snake_case'
-module-naming-style = 'snake_case'
-no-docstring-rgx = ['^_']
-property-classes = ['abc.abstractproperty']
-variable-naming-style = 'snake_case'
-
-[tool.pylint.'VARIABLES']
-allow-global-unused-variables = ['yes']
-callbacks = ['cb_', '_cb']
-dummy-variables-rgx = [
-    '_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_'
-]
-ignored-argument-names = ['_.*|^ignored_|^unused_']
-init-import = ['no']
-redefining-builtins-modules = [
-    'six.moves',
-    'past.builtins',
-    'future.builtins',
-    'builtins,io'
-]
-
-[tool.pylint.'DESIGN']
-max-args = 5
-max-attributes = 8
-max-bool-expr = 5
-max-branches = 12
-max-locals = 15
-max-parents = 7
-max-public-methods = 20
-max-returns = 6
-max-statements = 50
-min-public-methods = 1
-
-[tool.pylint.'IMPORTS']
-allow-wildcard-with-all = ['no']
-analyse-fallback-blocks = ['no']
-deprecated-modules = [
-    'regsub',
-    'TERMIOS',
-    'Bastion',
-    'rexec',
-    'optparse',
-    'tkinter.tix'
-]
-known-third-party = ['enchant']
-
-[tool.pylint.'CLASSES']
-defining-attr-methods = [
-    '__init__',
-    '__new__',
-    'setUp',
-    'setup',
-    '__post_init__',
-    '__attrs_post_init__'
-]
-exclude-protected = ['_asdict', '_fields', '_replace', '_source', '_make']
-valid-classmethod-first-arg = ['cls']
-valid-metaclass-classmethod-first-arg = ['mcs']
-
-[tool.pylint.'EXCEPTIONS']
-overgeneral-exceptions = ['builtins.BaseException', 'builtins.Exception']
-
 [tool.mypy]
 check_untyped_defs = true
 disallow_untyped_defs = true
@@ -216,7 +67,7 @@ warn_unused_ignores = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ['configue', 'configue.*']
+module = ['configue', 'configue.*', 'sky']
 ignore_missing_imports = true
 
 [tool.coverage.run]
@@ -231,6 +82,12 @@ exclude_lines = [
     'def __repr__'
 ]
 
-[tool.isort]
-profile = 'black'
-line_length = 120
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+select = ["E", "F", "W", "I", "N"]
+line-length = 120
+
+[tool.ruff.per-file-ignores]
+'__init__.py' = ["F401"]

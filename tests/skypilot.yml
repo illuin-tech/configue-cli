@@ -1,0 +1,13 @@
+skypilot:
+  cluster-name: test-cluster
+  task:
+    resources:
+      cloud: gcp
+      accelerators: K80:1
+    workdir: .
+    setup: |
+      echo 'Setup the job...'
+    run: |
+      set -e
+      cd ~/sky_workdir
+      {command} {parameters}
