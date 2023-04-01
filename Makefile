@@ -10,11 +10,10 @@ coverage: ##@checks Create code coverage report
 	coverage report -m --skip-covered
 
 format: ##@checks Check code formatting
-	isort --check-only ${LINT_PATHS}
-	black --check ${LINT_PATHS}
+	black --check configue_cli
 
 lint: ##@checks Run linting
-	python -m pylint ${LINT_PATHS}
+	ruff check configue_cli
 
 test: ##@checks Run all test suites across all environments
 	coverage erase
@@ -23,4 +22,4 @@ test: ##@checks Run all test suites across all environments
 	$(MAKE) coverage
 
 type: ##@checks Run type checking
-	mypy ${TYPE_PATHS}
+	mypy configue_cli

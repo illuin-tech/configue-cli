@@ -33,7 +33,7 @@ InjectedT = TypeVar("InjectedT")
 ReturnedT = TypeVar("ReturnedT")
 
 
-def inject_from_cli(  # pylint: disable=too-many-locals
+def inject_from_cli(
     *,
     context: click.Context,
     inner_function: Callable[[Union[InjectedT, DictConfig]], ReturnedT],

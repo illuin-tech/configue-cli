@@ -20,7 +20,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: make install
+        run: |
+          pip install --upgrade pip
+          make install
       - name: Test with pytest
         run: make test
 
@@ -37,14 +39,35 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: make install
-      - name: Lint
+        run: |
+          pip install --upgrade pip
+          make install
+      - name: Code formatting
         run: make format
-      - name: Lint with pylint
+      - name: Linting
         run: make lint
 
+  type:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          make install
+      - name: Type checking
+        run: make type
+
   deploy:
-    needs: [test, lint]
+    needs: [test, lint, type]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'release' }}
 
@@ -55,7 +78,9 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install dependencies
-        run: make install
+        run: |
+          pip install --upgrade pip
+          make install
       - name: Build and publish
         env:
           TWINE_USERNAME: __token__

@@ -10,7 +10,7 @@ from rich.text import Text
 from rich.tree import Tree
 
 from .dict_config import DictConfig
-from .exceptions import MissingMandatoryValue
+from .exceptions import MissingMandatoryValueError
 from .missing import MISSING, MissingType
 
 DEFAULT_STYLE = Style(color="green")
@@ -58,7 +58,7 @@ class Parser:
             dotted_key_name = str(key) if prefix_key == "" else f"{prefix_key}.{str(key)}"
             if isinstance(value, MissingType):
                 if self.throw_on_missing_value:
-                    raise MissingMandatoryValue(f"Missing mandatory value: {dotted_key_name}")
+                    raise MissingMandatoryValueError(f"Missing mandatory value: {dotted_key_name}")
                 tree = Tree(Text(str(key) + ": ") + Text(str(MISSING), style=MISSING_VALUE_STYLE))
             elif key == "()":
                 tree = Tree(Text(f"(): {value}", style=CONSTRUCTOR_STYLE))

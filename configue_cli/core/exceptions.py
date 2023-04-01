@@ -1,6 +1,6 @@
-class MissingMandatoryValue(Exception):
+class MissingMandatoryValueError(Exception):
     pass
 
 
-class UnsupportedDataclassType(Exception):
+class UnsupportedDataclassTypeError(Exception):
     pass

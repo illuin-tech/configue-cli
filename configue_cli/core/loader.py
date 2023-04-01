@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from .dict_config import DictConfig
 
 
-# pylint: disable=too-many-ancestors
 class NonInstanciatingConfigueLoader(ConfigueLoader):
     def construct_yaml_map(self, node: MappingNode) -> MappingNode:
         return cast(MappingNode, super(FullLoader, self).construct_yaml_map(node))  # type: ignore[misc]
@@ -31,7 +30,7 @@ class NonInstanciatingFileLoader(FileLoader):
         loader_cls.add_constructor("!path", self._load_path)
         loader_cls.add_constructor("!cfg", self._load_cfg)
         loader_cls.add_constructor("!ext", self._load_ext)
-        loader_cls.add_constructor("tag:yaml.org,2002:map", loader_cls.construct_yaml_map)  # type: ignore[type-var]
+        loader_cls.add_constructor("tag:yaml.org,2002:map", loader_cls.construct_yaml_map)
         loader_cls.add_multi_constructor("tag:yaml.org,2002:python/object:", UnsafeConstructor.construct_python_object)
         loader_cls.add_multi_constructor(
             "tag:yaml.org,2002:python/object/new:", UnsafeConstructor.construct_python_object_new
@@ -56,7 +55,7 @@ class InstanciatingFileLoader(FileLoader):
         loader_cls.add_constructor("!path", self._load_path)
         loader_cls.add_constructor("!cfg", self._load_cfg)
         loader_cls.add_constructor("!ext", self._load_ext)
-        loader_cls.add_constructor("tag:yaml.org,2002:map", loader_cls.construct_yaml_map)  # type: ignore[type-var]
+        loader_cls.add_constructor("tag:yaml.org,2002:map", loader_cls.construct_yaml_map)
         loader_cls.add_multi_constructor("tag:yaml.org,2002:python/object:", UnsafeConstructor.construct_python_object)
         loader_cls.add_multi_constructor(
             "tag:yaml.org,2002:python/object/new:", UnsafeConstructor.construct_python_object_new

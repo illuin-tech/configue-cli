@@ -150,7 +150,7 @@ $ python main.py model.batch_size=3
 
 Traceback (most recent call last):
   ...
-configue_cli.core.exceptions.MissingMandatoryValue: Missing mandatory value: dataset.name
+configue_cli.core.exceptions.MissingMandatoryValueError: Missing mandatory value: dataset.name
 ```
 
 ## Configuration with YAML files
